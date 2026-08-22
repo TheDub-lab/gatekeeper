@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+gatekeeper/data/*.json
+gatekeeper/data/*.jsonl
+gatekeeper/data/dashboard_live.html

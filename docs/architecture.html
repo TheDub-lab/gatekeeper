@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gatekeeper — Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body { background:#020617; color:#e2e8f0; font-family:'JetBrains Mono',monospace; margin:0; padding:32px; }
+  header { text-align:center; margin-bottom:24px; }
+  h1 { font-size:20px; letter-spacing:.08em; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:50%; background:#22d3ee; animation:pulse 2s infinite; margin-right:8px;}
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .sub { color:#64748b; font-size:11px; }
+  .frame { background:#0f172a; border:1px solid #1e293b; border-radius:12px; padding:16px; max-width:1180px; margin:0 auto; }
+  .cards { display:flex; gap:14px; justify-content:center; max-width:1180px; margin:18px auto 0; flex-wrap:wrap;}
+  .card { background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:14px 18px; width:30%; min-width:280px; }
+  .card h3 { font-size:12px; margin-bottom:8px; color:#e2e8f0; }
+  .card ul { list-style:none; padding:0; margin:0; font-size:10px; line-height:1.9; color:#94a3b8; }
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="dot"></span>GATEKEEPER — BOUNDED AUTONOMY ARCHITECTURE</h1>
+  <div class="sub">Strands Agents SDK × Safety Protocol · Every action gated, every event audited</div>
+</header>
+
+<div class="frame">
+<svg viewBox="0 0 1160 640" xmlns="http://www.w3.org/2000/svg" width="100%">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+    </pattern>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrR" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#fb7185"/>
+    </marker>
+    <marker id="arrA" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#fbbf24"/>
+    </marker>
+    <marker id="arrG" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#34d399"/>
+    </marker>
+  </defs>
+  <rect width="1160" height="640" fill="url(#grid)"/>
+
+  <!-- ===== ARROWS (behind boxes) ===== -->
+  <!-- feeds -> scanner -->
+  <line x1="150" y1="150" x2="330" y2="200" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="150" y1="260" x2="330" y2="230" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- scanner -> findings -->
+  <line x1="470" y1="215" x2="560" y2="215" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <!-- actor tools -> protocol gate -->
+  <line x1="720" y1="290" x2="800" y2="290" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrR)"/>
+  <!-- protocol -> allow path -->
+  <line x1="960" y1="270" x2="1040" y2="220" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <!-- protocol -> audit -->
+  <line x1="960" y1="300" x2="1040" y2="360" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- protocol -> human approval -->
+  <line x1="960" y1="320" x2="900" y2="480" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrA)"/>
+  <!-- human decision back -->
+  <line x1="770" y1="500" x2="640" y2="380" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arrA)"/>
+
+  <!-- ===== FEEDS (external) ===== -->
+  <g>
+    <rect x="40" y="120" width="110" height="56" rx="6" fill="#0f172a"/>
+    <rect x="40" y="120" width="110" height="56" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="95" y="144" text-anchor="middle" fill="#e2e8f0" font-size="12">Bank Feed</text>
+    <text x="95" y="160" text-anchor="middle" fill="#64748b" font-size="9">transactions.json</text>
+  </g>
+  <g>
+    <rect x="40" y="232" width="110" height="56" rx="6" fill="#0f172a"/>
+    <rect x="40" y="232" width="110" height="56" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="95" y="256" text-anchor="middle" fill="#e2e8f0" font-size="12">Email Inbox</text>
+    <text x="95" y="272" text-anchor="middle" fill="#64748b" font-size="9">billing notices</text>
+  </g>
+
+  <!-- ===== SCANNER AGENT (backend) ===== -->
+  <rect x="330" y="165" width="140" height="100" rx="6" fill="#0f172a"/>
+  <rect x="330" y="165" width="140" height="100" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+  <text x="400" y="195" text-anchor="middle" fill="#e2e8f0" font-size="12">Scanner Agent</text>
+  <text x="400" y="212" text-anchor="middle" fill="#64748b" font-size="9">Strands Agent</text>
+  <text x="400" y="228" text-anchor="middle" fill="#64748b" font-size="9">duplicate / hike / trial</text>
+  <text x="400" y="244" text-anchor="middle" fill="#64748b" font-size="9">/ unused detection</text>
+
+  <!-- ===== FINDINGS BUS ===== -->
+  <rect x="565" y="192" width="90" height="46" rx="6" fill="#0f172a"/>
+  <rect x="565" y="192" width="90" height="46" rx="6" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1.5"/>
+  <text x="610" y="212" text-anchor="middle" fill="#e2e8f0" font-size="10">Findings</text>
+  <text x="610" y="227" text-anchor="middle" fill="#94a3b8" font-size="8">ActionRequest</text>
+
+  <!-- ===== ACTOR TOOLS ===== -->
+  <rect x="580" y="255" width="140" height="70" rx="6" fill="#0f172a"/>
+  <rect x="580" y="255" width="140" height="70" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+  <text x="650" y="278" text-anchor="middle" fill="#e2e8f0" font-size="12">Actor Tools</text>
+  <text x="650" y="294" text-anchor="middle" fill="#64748b" font-size="9">@tool cancel / dispute</text>
+  <text x="650" y="308" text-anchor="middle" fill="#64748b" font-size="9">@tool send_message</text>
+
+  <!-- ===== SAFETY PROTOCOL GATE (security boundary) ===== -->
+  <rect x="795" y="180" width="170" height="160" rx="10" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <rect x="810" y="196" width="140" height="128" rx="6" fill="#0f172a"/>
+  <rect x="810" y="196" width="140" height="128" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+  <text x="880" y="218" text-anchor="middle" fill="#fb7185" font-size="12" font-weight="bold">Safety Protocol</text>
+  <text x="880" y="238" text-anchor="middle" fill="#94a3b8" font-size="9">1 binding check</text>
+  <text x="880" y="254" text-anchor="middle" fill="#94a3b8" font-size="9">2 kill switch</text>
+  <text x="880" y="270" text-anchor="middle" fill="#94a3b8" font-size="9">3 scope whitelist</text>
+  <text x="880" y="286" text-anchor="middle" fill="#94a3b8" font-size="9">4 budget limit ($50)</text>
+  <text x="880" y="302" text-anchor="middle" fill="#94a3b8" font-size="9">5 approval gate (&gt;$20)</text>
+  <text x="880" y="318" text-anchor="middle" fill="#94a3b8" font-size="9">6 execute</text>
+
+  <!-- ===== EXECUTED ===== -->
+  <rect x="1030" y="190" width="105" height="56" rx="6" fill="#0f172a"/>
+  <rect x="1030" y="190" width="105" height="56" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+  <text x="1082" y="214" text-anchor="middle" fill="#e2e8f0" font-size="11">Executed ✓</text>
+  <text x="1082" y="230" text-anchor="middle" fill="#64748b" font-size="9">in-scope actions</text>
+
+  <!-- ===== AUDIT TRAIL ===== -->
+  <rect x="1020" y="332" width="120" height="56" rx="6" fill="#0f172a"/>
+  <rect x="1020" y="332" width="120" height="56" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="1080" y="356" text-anchor="middle" fill="#e2e8f0" font-size="11">Audit Trail</text>
+  <text x="1080" y="372" text-anchor="middle" fill="#64748b" font-size="9">audit.jsonl</text>
+
+  <!-- ===== HUMAN APPROVAL ===== -->
+  <rect x="640" y="470" width="260" height="90" rx="6" fill="#0f172a"/>
+  <rect x="640" y="470" width="260" height="90" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="770" y="496" text-anchor="middle" fill="#fbbf24" font-size="12">Human Decision Point</text>
+  <text x="770" y="514" text-anchor="middle" fill="#94a3b8" font-size="9">disputes + outbound comms held here</text>
+  <text x="770" y="530" text-anchor="middle" fill="#94a3b8" font-size="9">dashboard approve/deny by token</text>
+  <text x="770" y="546" text-anchor="middle" fill="#64748b" font-size="8">the agent pings only when it must</text>
+
+  <!-- labels on arrows -->
+  <text x="505" y="205" fill="#fb923c" font-size="8">flags</text>
+  <text x="738" y="282" fill="#fb7185" font-size="8">every call</text>
+  <text x="985" y="235" fill="#34d399" font-size="8">allow</text>
+  <text x="990" y="340" fill="#a78bfa" font-size="8">log all</text>
+  <text x="905" y="420" fill="#fbbf24" font-size="8">hold</text>
+
+  <!-- legend -->
+  <g font-size="8" fill="#64748b">
+    <rect x="40" y="470" width="200" height="130" rx="6" fill="#0f172a" stroke="#1e293b"/>
+    <text x="52" y="490" fill="#94a3b8">LEGEND</text>
+    <rect x="52" y="500" width="10" height="10" fill="rgba(6,78,59,0.4)" stroke="#34d399"/><text x="70" y="509">agent component</text>
+    <rect x="52" y="520" width="10" height="10" fill="rgba(136,19,55,0.4)" stroke="#fb7185"/><text x="70" y="529">security enforcement</text>
+    <rect x="52" y="540" width="10" height="10" fill="rgba(120,53,15,0.3)" stroke="#fbbf24"/><text x="70" y="549">human in the loop</text>
+    <line x1="52" y1="562" x2="62" y2="562" stroke="#fb7185" stroke-dasharray="4,4"/><text x="70" y="565">gated path (cannot bypass)</text>
+    <line x1="52" y1="582" x2="62" y2="582" stroke="#fbbf24" stroke-dasharray="6,3"/><text x="70" y="585">approval flow</text>
+  </g>
+</svg>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <h3><span class="dot"></span>Stack</h3>
+    <ul>
+      <li>• Strands Agents SDK — agent loop, @tool actions</li>
+      <li>• Amazon Bedrock — Nova Lite decision model</li>
+      <li>• safety-protocol lib — enforcement layer</li>
+      <li>• Single-file HTML dashboard — decisions + audit</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3><span class="dot"></span>The Guarantee</h3>
+    <ul>
+      <li>• Tools ARE the protocol — no bypass path exists</li>
+      <li>• Scope whitelist: merchant domains only</li>
+      <li>• Budget cap $50; &gt;$20 requires a human</li>
+      <li>• Every decision logged to tamper-evident trail</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3><span class="dot"></span>Deployment Path</h3>
+    <ul>
+      <li>• Local demo today (seeded feeds)</li>
+      <li>• AgentCore runtime-ready (same interface)</li>
+      <li>• Real bank/email APIs drop into feeds.py</li>
+      <li>• On-chain audit hash via sim layer (optional)</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>
