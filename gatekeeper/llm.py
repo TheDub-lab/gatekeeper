@@ -30,9 +30,14 @@ def get_model():
             temperature=0.2,
         )
     except Exception as e:
-        if os.environ.get("GATEKEEPER_LLM") == "1":
+        msg = str(e)
+        if "being verified" in msg:
+            print("[gatekeeper] AWS account still verifying — using rules engine. "
+                  "Retry later; nothing to fix.")
+        elif os.environ.get("GATEKEEPER_LLM") == "1":
             raise
-        print(f"[gatekeeper] LLM unavailable ({type(e).__name__}) — using rules engine.")
+        else:
+            print(f"[gatekeeper] LLM unavailable ({type(e).__name__}) — using rules engine.")
         return None
 
 
