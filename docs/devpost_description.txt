@@ -1,0 +1,19 @@
+GATEKEEPER — An autonomous subscription watchdog with bounded autonomy.
+
+WHAT IT DOES
+Gatekeeper finds the money you're quietly losing — duplicate charges, price hikes, trials that silently convert to paid, memberships you stopped using — and handles them end to end. It runs in the background and only surfaces when there's a real decision to make.
+
+WHO IT'S FOR
+Everyday people drowning in subscription waste (the Everyday Agents track), and anyone who wants an agent that touches money without needing to watch it constantly.
+
+WHY IT MATTERS
+Agents that touch money fail on trust, not capability. The missing piece isn't smarter models — it's enforceable authorization. Every action Gatekeeper takes passes through a safety protocol: binding check, kill switch, scope whitelist, budget limit, approval gate. The agent can only act on whitelisted merchant domains via three action types, has a $50 budget cap, and disputes or outbound messages are held for human sign-off. There is no bypass path — the agent's tools ARE the protocol. Two cancellations execute autonomously; two actions wait for a human; every event is logged to a tamper-evident audit trail. Identified savings in the demo: $62.49/month.
+
+HOW IT WORKS
+Built on the Strands Agents SDK. The scanner agent reads a bank feed and inbox, flags anomalies, and emits ActionRequests. Each request is evaluated by the open-source safety-protocol library before any execution. In-scope cancellations run automatically; disputes and outbound comms are held at an approval gate the human clears from a self-explaining dashboard. The same enforcement layer generalizes to any high-stakes agent domain — health, legal, procurement.
+
+STACK
+Strands Agents SDK (@tool actions) · Amazon Bedrock (Nova Lite) decision model, with a deterministic rules-engine fallback that produces identical output · safety-protocol enforcement library · single-file HTML dashboard.
+
+REPO
+https://github.com/TheDub-lab/gatekeeper
